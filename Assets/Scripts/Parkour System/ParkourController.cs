@@ -16,8 +16,8 @@ public class ParkourController : MonoBehaviour
         var hitData = environmentScanner.ObstacleCheck();
         if (hitData.forwardHitFound)
         {
-            //µ÷ÊÔÓÃ£º´òÓ¡ÕÏ°­ÎïÃû³Æ
-            Debug.Log("ÕÒµ½ÕÏ°­£º"+ hitData.forwardHit.transform.name);
+            //è°ƒè¯•ç”¨ï¼šæ‰“å°éšœç¢ç‰©åç§°
+            Debug.Log("æ‰¾åˆ°éšœç¢ï¼š"+ hitData.forwardHit.transform.name);
         }
     }
 }
