@@ -25,6 +25,7 @@ public class ParkourController : MonoBehaviour
     {
         if (Input.GetButton("Jump") && !inAction)
         {
+            //调试用的射线也只会在if满足的时候触发
             //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体
             var hitData = environmentScanner.ObstacleCheck();
             if (hitData.forwardHitFound)
@@ -39,10 +40,12 @@ public class ParkourController : MonoBehaviour
                         //StartCoroutine()方法：开启一个协程
                         //启动 DoParkourAction 协程，播放跑酷动画
                         StartCoroutine(DoParkourAction(action));
+                        //跳出循环
+                        break;
                     }
                 }
                 //调试用：打印障碍物名称
-                Debug.Log("找到障碍：" + hitData.forwardHitInfo.transform.name);
+                //Debug.Log("找到障碍：" + hitData.forwardHitInfo.transform.name);
 
             }
         }
@@ -58,8 +61,9 @@ public class ParkourController : MonoBehaviour
         //从当前动画到指定的目标动画，平滑过渡0.2s
         //CrossFade()方法：平滑地从当前动画过渡到指定的目标动画
         animator.CrossFade(action.AnimName, 0.2f);
-        //暂停协程，直到下一帧继续执行，确保动画过渡已经开始。
-        yield return null;
+        ////暂停协程，直到下一帧继续执行，确保动画过渡已经开始。
+        //多等一会儿？
+        yield return new WaitForSeconds(0.2f);
 
         //第0层动画，也就是StepUp，用来后面调用这个动画的长度等属性
         var animStateInfo = animator.GetCurrentAnimatorStateInfo(0);

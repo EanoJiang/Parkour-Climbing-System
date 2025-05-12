@@ -11,9 +11,9 @@ public class ParkourAction : ScriptableObject
 
     public bool CheckIfPossible(ObstacleHitData hitData, Transform player)
     {
-        //»ñÈ¡ÃæÇ°µÄÕÏ°­Îï¸ß¶È = »÷ÖĞµãµÄyÖá×ø±ê - Íæ¼ÒµÄyÖá×ø±ê
+        //è·å–é¢å‰çš„éšœç¢ç‰©é«˜åº¦ = å‡»ä¸­ç‚¹çš„yè½´åæ ‡ - ç©å®¶çš„yè½´åæ ‡
         float height = hitData.heightHitInfo.point.y - player.position.y;
-        //Ö»ÓĞÔÚÕâ¸öÇø¼äÄÚ²Å»á·µ»Øtrue
+        //åªæœ‰åœ¨è¿™ä¸ªåŒºé—´å†…æ‰ä¼šè¿”å›true
         if(height < minHeigth || height > maxHeigth)
         {
             return false;
@@ -23,6 +23,6 @@ public class ParkourAction : ScriptableObject
             return true;
         }
     }
-    //Íâ²¿¿É·ÃÎÊµÄ¶¯»­Ãû³Æ
+    //å¤–éƒ¨å¯è®¿é—®çš„åŠ¨ç”»åç§°
     public string AnimName => animName;
 }

@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        #region 碰撞检测
+        #region 地面检测
         GroundCheck();
 
         #endregion
@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour
         if (!hasControl)
         {
             //更新动画参数
-            animator.SetFloat("moveAmount", 0);
+            animator.SetFloat("moveAmount", 0f);
             //更新朝向
             targetRotation = transform.rotation;
 
