@@ -1167,8 +1167,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   rotationSpeed: 500
-  groundCheckRadius: 0.2
-  groundCheckOffset: {x: 0, y: 0.08, z: 0.07}
+  groundCheckRadius: 0.23
+  groundCheckOffset: {x: 0, y: 0.08, z: 0.09}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -1184,6 +1184,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd8dc207bb1b3ef4c852930d4b417e6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  parkourActions:
+  - {fileID: 11400000, guid: 25bdca17f11abfa4292925f5a9327af7, type: 2}
+  - {fileID: 11400000, guid: f32ec85e1f7c0e9498ba04df11e595bf, type: 2}
 --- !u!114 &1303847368
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -16,8 +16,8 @@ public class PlayerController : MonoBehaviour
 
     //是否在地面
     bool isGrounded;
-    //是否拥有控制权
-    bool hasControl;
+    //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
+    bool hasControl = true;
 
     float ySpeed;
 
@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region 角色动画控制
-        //角色动画播放
+        //设置人物动画参数moveAmount
         animator.SetFloat("moveAmount", moveAmount,0.2f,Time.deltaTime);
 
         #endregion
@@ -112,8 +112,18 @@ public class PlayerController : MonoBehaviour
         //传参给 hasControl 私有变量
         this.hasControl = hasControl;
         //根据 hasControl 变量的值来启用或禁用 charactercontroller 组件
-        //如果角色没有控制权，则禁用角色控制器，让角色静止不动
+        //如果角色没有控制权，则禁用角色控制器，hasControl = false，让角色静止不动
         charactercontroller.enabled = hasControl;
+
+        //如果角色控制权被禁用，则更新动画参数和朝向
+        if (!hasControl)
+        {
+            //更新动画参数
+            animator.SetFloat("moveAmount", 0);
+            //更新朝向
+            targetRotation = transform.rotation;
+
+        }
     }
 
     //画检测射线
