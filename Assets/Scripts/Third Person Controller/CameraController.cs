@@ -4,24 +4,24 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    //ÉãÏñ»ú¸úËæµÄÄ¿±ê
+    //æ‘„åƒæœºè·Ÿéšçš„ç›®æ ‡
     [SerializeField] Transform followTarget;
     [SerializeField] float rotationSpeed = 1.5f;
-    //¾àÀë
+    //è·ç¦»
     [SerializeField] float distance;
 
-    //ÈÆyÖáµÄÐý×ª½Ç¶È¡ª¡ªË®Æ½ÊÓ½ÇÐý×ª
+    //ç»•yè½´çš„æ—‹è½¬è§’åº¦â€”â€”æ°´å¹³è§†è§’æ—‹è½¬
     float rotationY;
-    //ÈÆxÖáµÄÐý×ª½Ç¶È¡ª¡ª´¹Ö±ÊÓ½ÇÐý×ª
+    //ç»•xè½´çš„æ—‹è½¬è§’åº¦â€”â€”åž‚ç›´è§†è§’æ—‹è½¬
     float rotationX;
-    //ÏÞÖÆrotationX·ù¶È
+    //é™åˆ¶rotationXå¹…åº¦
     [SerializeField] float minVerticalAngle = -20;
     [SerializeField] float maxVerticalAngle = 45;
-    //¿ò¼ÜÆ«ÒÆÏòÁ¿¡ª¡ªÉãÏñ»úÎ»ÖÃÊÓ²îÆ«ÒÆ
+    //æ¡†æž¶åç§»å‘é‡â€”â€”æ‘„åƒæœºä½ç½®è§†å·®åç§»
     [SerializeField] Vector2 frameOffset;
 
-    //ÊÓ½Ç¿ØÖÆ·´×ª
-    [Header("ÊÓ½Ç¿ØÖÆ·´×ª:invertXÊÇ·ñ·´×ª´¹Ö±ÊÓ½Ç,invertYÊÇ·ñ·´×ªË®Æ½ÊÓ½Ç")]
+    //è§†è§’æŽ§åˆ¶åè½¬
+    [Header("è§†è§’æŽ§åˆ¶åè½¬:invertXæ˜¯å¦åè½¬åž‚ç›´è§†è§’,invertYæ˜¯å¦åè½¬æ°´å¹³è§†è§’")]
     [SerializeField] bool invertX;
     [SerializeField] bool invertY;
 
@@ -30,7 +30,7 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        //Òþ²Ø¹â±ê
+        //éšè—å…‰æ ‡
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -38,30 +38,30 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        //ÊÓ½Ç¿ØÖÆ·´×ª²ÎÊý
+        //è§†è§’æŽ§åˆ¶åè½¬å‚æ•°
         invertXValue = (invertX)? -1 : 1;
         invertYValue = (invertY)? -1 : 1;
 
-        //Ë®Æ½ÊÓ½Ç¿ØÖÆ¡ª¡ªÊó±ê(ÊÖ±ú)xÖá¿ØÖÆrotationY
+        //æ°´å¹³è§†è§’æŽ§åˆ¶â€”â€”é¼ æ ‡(æ‰‹æŸ„)xè½´æŽ§åˆ¶rotationY
         rotationY += Input.GetAxis("Camera X") * rotationSpeed * invertYValue;
-        //´¹Ö±ÊÓ½Ç¿ØÖÆ¡ª¡ªÊó±ê(ÊÖ±ú)yÖá¿ØÖÆrotationX
+        //åž‚ç›´è§†è§’æŽ§åˆ¶â€”â€”é¼ æ ‡(æ‰‹æŸ„)yè½´æŽ§åˆ¶rotationX
         rotationX += Input.GetAxis("Camera Y") * rotationSpeed * invertXValue;
-        //ÏÞÖÆrotationX·ù¶È
+        //é™åˆ¶rotationXå¹…åº¦
         rotationX = Mathf.Clamp(rotationX, minVerticalAngle, maxVerticalAngle);
 
-        //ÊÓ½ÇÐý×ª²ÎÁ¿
-        //ÏëÒªË®Æ½Ðý×ªÊÓ½Ç£¬ËùÒÔÐèÒªµÄ²ÎÁ¿ÎªÈÆyÖáÐý×ª½Ç¶È
+        //è§†è§’æ—‹è½¬å‚é‡
+        //æƒ³è¦æ°´å¹³æ—‹è½¬è§†è§’ï¼Œæ‰€ä»¥éœ€è¦çš„å‚é‡ä¸ºç»•yè½´æ—‹è½¬è§’åº¦
         var targetRotation = Quaternion.Euler(rotationX, rotationY, 0);
 
-        //ÉãÏñ»úµÄ½¹µãÎ»ÖÃ
+        //æ‘„åƒæœºçš„ç„¦ç‚¹ä½ç½®
         var focusPosition = followTarget.position + new Vector3(frameOffset.x, frameOffset.y, 0);
-        //ÉãÏñ»ú·ÅÔÚÄ¿±êºóÃæ5¸öµ¥Î»µÄÎ»ÖÃ
+        //æ‘„åƒæœºæ”¾åœ¨ç›®æ ‡åŽé¢5ä¸ªå•ä½çš„ä½ç½®
         transform.position = focusPosition - targetRotation * new Vector3(0, 0, distance);
-        //ÉãÏñ»úÊ¼ÖÕ³¯ÏòÄ¿±ê
+        //æ‘„åƒæœºå§‹ç»ˆæœå‘ç›®æ ‡
         transform.rotation = targetRotation;
     }
 
-    //Ë®Æ½·½ÏòµÄÐý×ª£¬·µ»ØÉãÏñ»úµÄË®Æ½Ðý×ªËÄÔªÊý¡£
+    //æ°´å¹³æ–¹å‘çš„æ—‹è½¬ï¼Œè¿”å›žæ‘„åƒæœºçš„æ°´å¹³æ—‹è½¬å››å…ƒæ•°ã€‚
     public Quaternion PlanarRotation => Quaternion.Euler(0, rotationY, 0);
 
 }

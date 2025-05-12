@@ -14,7 +14,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField]Vector3 groundCheckOffset;
     [SerializeField]LayerMask groundLayer;
 
+    //是否在地面
     bool isGrounded;
+    //是否拥有控制权
+    bool hasControl;
 
     float ySpeed;
 
@@ -47,6 +50,11 @@ public class PlayerController : MonoBehaviour
 
         //让人物移动方向关联相机的朝向
         var moveDir = cameraController.PlanarRotation * moveInput;
+
+        //如果没有控制权，后面的碰撞检测就不执行了
+        if(!hasControl){
+            return;
+        }
 
         #region 碰撞检测
         GroundCheck();
@@ -91,11 +99,21 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    //地面检测
     private void GroundCheck()
     {
         // Physics.CheckSphere()方法会向场景中的所有碰撞体投射一个胶囊体（capsule），有相交就返回true
         // 位置偏移用来在unity控制台里面调整
         isGrounded = Physics.CheckSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius, groundLayer);
+    }
+
+    //角色控制
+    public void SetControl(bool hasControl){
+        //传参给 hasControl 私有变量
+        this.hasControl = hasControl;
+        //根据 hasControl 变量的值来启用或禁用 charactercontroller 组件
+        //如果角色没有控制权，则禁用角色控制器，让角色静止不动
+        charactercontroller.enabled = hasControl;
     }
 
     //画检测射线
