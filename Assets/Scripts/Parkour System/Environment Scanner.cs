@@ -52,6 +52,7 @@ public struct ObstacleHitData
     #endregion
     #region 从击中点垂直方向发射的射线检测相关
     public bool heightHitFound;
+    //用来存射该射线向下击中障碍物的检测信息
     public RaycastHit heightHitInfo;
 
     #endregion

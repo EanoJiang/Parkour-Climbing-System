@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("玩家属性")]
     [SerializeField]float moveSpeed = 5f;
-    [SerializeField]float rotationSpeed = 10f;
+    [SerializeField]float rotationSpeed = 500f;
 
     [Header("Ground Check")]
     [SerializeField]float groundCheckRadius = 0.5f;
@@ -133,5 +133,8 @@ public class PlayerController : MonoBehaviour
         Gizmos.color = new Color(0, 1, 0, 0.5f);
         Gizmos.DrawSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius);
     }
+
+    //让rotationSpeed可以被外部访问
+    public float RotationSpeed => rotationSpeed;
 
 }

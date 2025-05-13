@@ -15,3 +15,8 @@ MonoBehaviour:
   animName: StepUp
   minHeigth: 0.3
   maxHeigth: 0.8
+  rotateToObstacle: 0
+  enableTargetMatching: 1
+  matchBodyPart: 3
+  matchStartTime: 0.3
+  matchTargetTime: 0.45
