@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]LayerMask groundLayer;
 
     //是否在地面
-    bool isGrounded;
+    public bool isGrounded;
     //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
     bool hasControl = true;
 
@@ -59,8 +59,6 @@ public class PlayerController : MonoBehaviour
         #region 地面检测
         GroundCheck();
 
-        #endregion
-
         if (isGrounded)
         {
             //设置一个较小的负值，让角色在地上的时候被地面吸住
@@ -71,6 +69,7 @@ public class PlayerController : MonoBehaviour
             //在空中时，角色的速度由ySpeed决定
             ySpeed += Physics.gravity.y * Time.deltaTime;
         }
+        #endregion
 
         var velocity = moveDir * moveSpeed;
         velocity.y = ySpeed;

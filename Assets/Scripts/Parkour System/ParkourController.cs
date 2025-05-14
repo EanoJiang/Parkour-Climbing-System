@@ -24,7 +24,7 @@ public class ParkourController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (Input.GetButton("Jump") && !inAction)
+        if (Input.GetButton("Jump") && !inAction && playerController.isGrounded)
         {
             //调试用的射线也只会在if满足的时候触发
             //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体

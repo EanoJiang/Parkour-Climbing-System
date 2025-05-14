@@ -31,9 +31,9 @@ public class ParkourAction : ScriptableObject
     //匹配的位置
     public Vector3 MatchPosition { get; set; }
 
-    //动作执行前的检查
+    //动作执行前的检查————这是一个虚函数，在子类中可覆盖
     //主要是找false
-    public bool CheckIfPossible(ObstacleHitData hitData, Transform player)
+    public virtual bool CheckIfPossible(ObstacleHitData hitData, Transform player)
     {
         //障碍物Tag
         //如果Tag填写了字段且不匹配，false
