@@ -59,6 +59,9 @@ public class ParkourController : MonoBehaviour
         //禁用玩家控制
         playerController.SetControl(false);
 
+        //设置动画是否镜像
+        animator.SetBool("mirrorAction", action.Mirror);
+
         //从当前动画到指定的目标动画，平滑过渡0.2s
         animator.CrossFade(action.AnimName, 0.2f);
 

@@ -19,8 +19,8 @@ public class ParkourAction : ScriptableObject
     [Header("动作播放后的延迟")]
     [SerializeField] float actionDelay;
     [Header("Target Matching")]
-    [SerializeField] bool enableTargetMatching;
-    [SerializeField] AvatarTarget matchBodyPart;
+    [SerializeField] bool enableTargetMatching = true;
+    [SerializeField] protected AvatarTarget matchBodyPart;  //在内部和子类可访问
     [SerializeField] float matchStartTime;
     [SerializeField] float matchTargetTime;
     [SerializeField] Vector3 matchPositionXYZWeight = new Vector3(0, 1, 0);
@@ -30,6 +30,8 @@ public class ParkourAction : ScriptableObject
     public Quaternion TargetRotation { get; set; }
     //匹配的位置
     public Vector3 MatchPosition { get; set; }
+    //动作镜像
+    public bool Mirror { get; set; }
 
     //动作执行前的检查————这是一个虚函数，在子类中可覆盖
     //主要是找false
