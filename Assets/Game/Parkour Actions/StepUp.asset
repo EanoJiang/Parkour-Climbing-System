@@ -13,10 +13,13 @@ MonoBehaviour:
   m_Name: StepUp
   m_EditorClassIdentifier: 
   animName: StepUp
+  obstacleTag: 
   minHeigth: 0.3
   maxHeigth: 0.8
   rotateToObstacle: 0
+  actionDelay: 0.1
   enableTargetMatching: 1
   matchBodyPart: 3
   matchStartTime: 0.3
   matchTargetTime: 0.45
+  matchPositionXYZWeight: {x: 0, y: 1, z: 0}

@@ -60,12 +60,12 @@ public class ParkourController : MonoBehaviour
         playerController.SetControl(false);
 
         //从当前动画到指定的目标动画，平滑过渡0.2s
-        //CrossFade()方法：平滑地从当前动画过渡到指定的目标动画
         animator.CrossFade(action.AnimName, 0.2f);
-        ////暂停协程，直到下一帧继续执行，确保动画过渡已经开始。
-        yield return null;
 
-        //第0层动画，也就是StepUp，用来后面调用这个动画的长度等属性
+        // 等待过渡完成
+        yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
+
+        // 现在获取动画状态信息
         var animStateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
         //#region 调试用
@@ -91,31 +91,39 @@ public class ParkourController : MonoBehaviour
                                                         playerController.RotationSpeed * Time.deltaTime);
             }
             //如果勾选目标匹配EnableTargetMatching
-            if (action.EnableTargetMatching)
+            //只有当不在过渡状态时才执行目标匹配
+            if (action.EnableTargetMatching && !animator.IsInTransition(0))
             {
                 MatchTarget(action);
             }
 
+            //过渡动画完全播完就停止该动作播放
+            if(animator.IsInTransition(0) && timer > 0.5f){
+                break;
+            }
+
             yield return null;
         }
-
-
-        //启用玩家控制
+        //对于一些组合动作，第一阶段播放完后就会被输入控制打断，这时候给一个延迟，让第二阶段的动画也播放完
+        //对于ClimbUp动作，第二阶段就是CrouchToStand
+        yield return new WaitForSeconds(action.ActionDelay);
+        //延迟结束后才启用玩家控制
         playerController.SetControl(true);
         //跑酷动作结束
         inAction = false;
     }
 
+    //目标匹配
     void MatchTarget(ParkourAction action)
     {
-        //只有在不匹配的时候才会调用
-        if (animator.isMatchingTarget)
+        //只有在不匹配和不在过渡状态的时候才会调用
+        if (animator.isMatchingTarget || animator.IsInTransition(0))
         {
             return;
         }
         //调用unity自带的MatchTarget方法
         animator.MatchTarget(action.MatchPosition, transform.rotation, action.MatchBodyPart, 
-                        new MatchTargetWeightMask(new Vector3(0, 1, 0), 0), action.MatchStartTime, action.MatchTargetTime);
+                        new MatchTargetWeightMask(action.MatchPositionXYZWeight, 0), action.MatchStartTime, action.MatchTargetTime);
     }
 
 }

@@ -7,18 +7,23 @@ public class ParkourAction : ScriptableObject
 {
     //动画名称
     [SerializeField] string animName;
-    //高度区间
+    //对应的障碍物Tag
+    [SerializeField] string obstacleTag;
+
+    [Header("高度区间")]
     [SerializeField] float minHeigth;
     [SerializeField] float maxHeigth;
 
     [Header ("自主勾选该动作是否需要转向障碍物")]
     [SerializeField] bool rotateToObstacle;
-
+    [Header("动作播放后的延迟")]
+    [SerializeField] float actionDelay;
     [Header("Target Matching")]
     [SerializeField] bool enableTargetMatching;
     [SerializeField] AvatarTarget matchBodyPart;
     [SerializeField] float matchStartTime;
     [SerializeField] float matchTargetTime;
+    [SerializeField] Vector3 matchPositionXYZWeight = new Vector3(0, 1, 0);
 
 
     //目标旋转量
@@ -26,11 +31,19 @@ public class ParkourAction : ScriptableObject
     //匹配的位置
     public Vector3 MatchPosition { get; set; }
 
+    //动作执行前的检查
+    //主要是找false
     public bool CheckIfPossible(ObstacleHitData hitData, Transform player)
     {
+        //障碍物Tag
+        //如果Tag填写了字段且不匹配，false
+        if(!string.IsNullOrEmpty(obstacleTag) && hitData.forwardHitInfo.collider.tag != obstacleTag){
+            return false;
+        }
+        //高度Tag
+        //如果高度不在区间内，false
         //获取面前的障碍物高度 = 击中点上方一定高度的y轴坐标 - 玩家的y轴坐标
         float height = hitData.heightHitInfo.point.y - player.position.y;
-        //只有在这个区间内才会返回true
         if(height < minHeigth || height > maxHeigth)
         {
             return false;
@@ -60,6 +73,6 @@ public class ParkourAction : ScriptableObject
     public AvatarTarget MatchBodyPart => matchBodyPart;
     public float MatchStartTime => matchStartTime;
     public float MatchTargetTime => matchTargetTime;
-
-
+    public Vector3 MatchPositionXYZWeight => matchPositionXYZWeight;
+    public float ActionDelay => actionDelay;    
 }
