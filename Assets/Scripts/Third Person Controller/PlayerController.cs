@@ -18,6 +18,8 @@ public class PlayerController : MonoBehaviour
     public bool isGrounded;
     //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
     bool hasControl = true;
+    //是否在悬崖边沿上
+    public bool IsOnLedge { get; set; }
 
     float ySpeed;
 
@@ -26,6 +28,7 @@ public class PlayerController : MonoBehaviour
     CameraController cameraController;
     Animator animator;
     CharacterController charactercontroller;
+    EnvironmentScanner environmentScanner;
 
     private void Awake()
     {
@@ -35,6 +38,8 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         //角色控制器
         charactercontroller = GetComponent<CharacterController>();
+        //环境扫描器
+        environmentScanner = GetComponent<EnvironmentScanner>();
     }
     private void Update()
     {
@@ -48,7 +53,7 @@ public class PlayerController : MonoBehaviour
         //标准化 moveInput 向量
         var moveInput = new Vector3(h, 0, v).normalized;
 
-        //让人物移动方向关联相机的朝向
+        //让人物移动方向关联相机的水平旋转朝向
         var moveDir = cameraController.PlanarRotation * moveInput;
 
         //如果没有控制权，后面的碰撞检测就不执行了
@@ -59,10 +64,20 @@ public class PlayerController : MonoBehaviour
         #region 地面检测
         GroundCheck();
 
+        animator.SetBool("isGrounded", isGrounded);
+
         if (isGrounded)
         {
             //设置一个较小的负值，让角色在地上的时候被地面吸住
             ySpeed = -0.5f;
+            //在地上的时候进行悬崖检测,传给isOnLedge变量
+            IsOnLedge = environmentScanner.LedgeCheck(moveDir);
+            #region 调试用
+            if (IsOnLedge)
+            {
+                Debug.Log("On Ledge");
+            }
+            #endregion
         }
         else
         {

@@ -6,7 +6,10 @@ using UnityEngine;
 public class ParkourController : MonoBehaviour
 {
     //定义一个面板可见的跑酷动作属性列表
+    [Header("跑酷动作列表")]
     [SerializeField] List<ParkourAction> parkourActions;
+    [Header("跳下悬崖动画")]
+    [SerializeField] ParkourAction JumpDownAction;
 
     EnvironmentScanner environmentScanner;
     Animator animator;
@@ -24,9 +27,10 @@ public class ParkourController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        #region 各种跑酷动作
         if (Input.GetButton("Jump") && !inAction && playerController.isGrounded)
         {
-            //调试用的射线也只会在if满足的时候触发
+            //ObstacleCheck()方法里的调试用的射线也只会在if满足的时候触发
             //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体
             var hitData = environmentScanner.ObstacleCheck();
             if (hitData.forwardHitFound)
@@ -50,6 +54,18 @@ public class ParkourController : MonoBehaviour
 
             }
         }
+        #endregion
+
+        #region 悬崖跳下动作
+        //在悬崖边沿且不在播放动作中
+        if(playerController.IsOnLedge && !inAction)
+        {
+            playerController.IsOnLedge = false;
+
+            StartCoroutine(DoParkourAction(JumpDownAction));
+
+        }
+        #endregion
     }
     //跑酷动作
     IEnumerator DoParkourAction(ParkourAction action)

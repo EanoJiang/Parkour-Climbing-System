@@ -959,7 +959,7 @@ MonoBehaviour:
   moveSpeed: 5
   rotationSpeed: 500
   groundCheckRadius: 0.23
-  groundCheckOffset: {x: 0, y: 0.08, z: 0.09}
+  groundCheckOffset: {x: 0, y: 0.1, z: 0.09}
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -981,6 +981,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2b8e54dc24cd549318e7b9ae0afb0958, type: 2}
   - {fileID: 11400000, guid: f32ec85e1f7c0e9498ba04df11e595bf, type: 2}
   - {fileID: 11400000, guid: 3e5f339afd2354796a1924e5b275d56f, type: 2}
+  JumpDownAction: {fileID: 11400000, guid: 2b5988b7894906e48ac73293fd4f92bf, type: 2}
 --- !u!114 &1303847368
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -996,6 +997,8 @@ MonoBehaviour:
   forwardRayOffset: {x: 0, y: 0.25, z: 0}
   forwardRayLength: 0.8
   heightRayLength: 5
+  ledgeRayLength: 10
+  ledgeHeightThreshold: 0.75
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 64
