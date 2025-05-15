@@ -15,11 +15,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField]LayerMask groundLayer;
 
     //是否在地面
-    public bool isGrounded;
+    bool isGrounded;
     //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
     bool hasControl = true;
     //是否在悬崖边沿上
     public bool IsOnLedge { get; set; }
+    //悬崖边沿击中相关数据
+    public LedgeHitData LedgeHitData { get; set; }
 
     float ySpeed;
 
@@ -56,37 +58,41 @@ public class PlayerController : MonoBehaviour
         //让人物移动方向关联相机的水平旋转朝向
         var moveDir = cameraController.PlanarRotation * moveInput;
 
-        //如果没有控制权，后面的碰撞检测就不执行了
+        //如果没有控制权，后面的就不执行了
         if(!hasControl){
             return;
         }
 
+        var velocity = Vector3.zero;
+
         #region 地面检测
         GroundCheck();
-
         animator.SetBool("isGrounded", isGrounded);
-
         if (isGrounded)
         {
             //设置一个较小的负值，让角色在地上的时候被地面吸住
             ySpeed = -0.5f;
+            velocity = moveDir * moveSpeed;
+            #region 悬崖检测
             //在地上的时候进行悬崖检测,传给isOnLedge变量
-            IsOnLedge = environmentScanner.LedgeCheck(moveDir);
-            #region 调试用
+            IsOnLedge = environmentScanner.LedgeCheck(moveDir,out LedgeHitData ledgeHitData);
+            //如果在悬崖边沿，就把击中数据传给LedgeHitData变量，用来在ParkourController里面调用
             if (IsOnLedge)
             {
+                LedgeHitData = ledgeHitData;
                 Debug.Log("On Ledge");
             }
             #endregion
         }
         else
         {
-            //在空中时，角色的速度由ySpeed决定
+            //在空中时，ySpeed受重力控制
             ySpeed += Physics.gravity.y * Time.deltaTime;
+            //简单模拟有空气阻力的平抛运动：空中时的速度设置为角色朝向速度的一半
+            velocity = transform.forward * moveSpeed / 2;
         }
         #endregion
-
-        var velocity = moveDir * moveSpeed;
+        //更新y轴方向的速度
         velocity.y = ySpeed;
         //帧同步移动
         //通过CharacterController.Move()来控制角色的移动，通过碰撞限制运动

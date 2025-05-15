@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnvironmentScanner : MonoBehaviour
 {
-    [Header ("障碍物检测——向前发送的射线相关参数")]
+    [Header("障碍物检测——向前发送的射线相关参数")]
     //y轴(竖直方向)偏移量
     [SerializeField] Vector3 forwardRayOffset = new Vector3(0, 0.25f, 0);
     //长度
@@ -34,50 +34,70 @@ public class EnvironmentScanner : MonoBehaviour
         //调试用的射线
         //第二个参数dir：Direction and length of the ray.
         Debug.DrawRay(forwardOrigin, transform.forward * forwardRayLength,
-                (hitData.forwardHitFound)? Color.red : Color.white);
-        
+                (hitData.forwardHitFound) ? Color.red : Color.white);
+
         //如果击中，则从击中点上方高度heightRayLength向下发射的射线
-        if(hitData.forwardHitFound){
+        if (hitData.forwardHitFound)
+        {
             var heightOrigin = hitData.forwardHitInfo.point + Vector3.up * heightRayLength;
-            hitData.heightHitFound = Physics.Raycast(heightOrigin,Vector3.down, 
+            hitData.heightHitFound = Physics.Raycast(heightOrigin, Vector3.down,
                                     out hitData.heightHitInfo, heightRayLength, obstacleLayer);
             //调试用的射线
             //第二个参数dir：Direction and length of the ray.
             Debug.DrawRay(heightOrigin, Vector3.down * heightRayLength,
-                    (hitData.heightHitFound)? Color.red : Color.white);
+                    (hitData.heightHitFound) ? Color.red : Color.white);
         }
-        
+
         return hitData;
     }
 
-    //检测是否在悬崖边缘
-    public bool LedgeCheck(Vector3 moveDir)
+    /// <summary>
+    /// 检测是否在悬崖边缘
+    /// </summary>
+    /// <param name="moveDir"></param>
+    /// <param name="ledgeHitData"></param>
+    /// <returns></returns>
+    /// out关键字需要在方法内部初始化
+    public bool LedgeCheck(Vector3 moveDir, out LedgeHitData ledgeHitData)
     {
+        //用来存悬崖边缘检测相关的信息
+        ledgeHitData = new LedgeHitData();
+
         //只有移动才会检测Ledge
         if (moveDir == Vector3.zero)
             return false;
 
         //起始位置向前偏移量
-        var originOffset = 0.5f;
+        float originOffset = 0.5f;
         //检测射线的起始位置
         var origin = transform.position + moveDir * originOffset + Vector3.up;    //起始位置不要在脚底，悬崖和和脚在同一高度，可能会检测不到，向上偏移一些
         //射线向下发射是否击中：击中点在地面位置，赋值给hitGround
         if (Physics.Raycast(origin, Vector3.down, out RaycastHit hitGround, ledgeRayLength, obstacleLayer))
         {
-            //调试用的射线
+            //调试用的向下发射的射线
             Debug.DrawRay(origin, Vector3.down * ledgeRayLength, Color.green);
-            //计算当前位置高度 = 角色位置高度 - 击中点高度
-            float height = transform.position.y - hitGround.point.y;
-            //超过这个悬崖高度阈值，才会认为是悬崖边缘
-            if (height > ledgeHeightThreshold)
+
+            //检测射线起始位置：脚底向前moveDir再向下偏移一些
+            var surfaceRayOrigin = transform.position + moveDir - Vector3.up * 0.1f;
+            //悬崖竖直表面射线是否击中：击中点在悬崖竖直表面，赋值给hitSurface
+            if (Physics.Raycast(surfaceRayOrigin, -moveDir, out ledgeHitData.hitSurface, 2f, obstacleLayer))
             {
-                return true;
+                //计算当前位置高度 = 角色位置高度 - 击中点高度
+                float height = transform.position.y - hitGround.point.y;
+                //超过这个悬崖高度阈值，才会认为是悬崖边缘
+                if (height > ledgeHeightThreshold)
+                {
+                    //计算当前位置与悬崖表面法线的夹角
+                    ledgeHitData.angle = Vector3.Angle(transform.forward, ledgeHitData.hitSurface.normal);
+                    ledgeHitData.height = height;
+                    
+                    return true;
+                }
             }
         }
         return false;
     }
 }
-
 public struct ObstacleHitData
 {
     #region 从角色膝盖出发的向前射线检测相关
@@ -92,5 +112,11 @@ public struct ObstacleHitData
     public RaycastHit heightHitInfo;
 
     #endregion
+}
+
+public struct LedgeHitData{
+    public float angle;
+    public float height;
+    public RaycastHit hitSurface;
 
 }

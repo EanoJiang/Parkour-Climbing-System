@@ -9,7 +9,7 @@ public class ParkourController : MonoBehaviour
     [Header("跑酷动作列表")]
     [SerializeField] List<ParkourAction> parkourActions;
     [Header("跳下悬崖动画")]
-    [SerializeField] ParkourAction JumpDownAction;
+    [SerializeField] ParkourAction jumpDownAction;
 
     EnvironmentScanner environmentScanner;
     Animator animator;
@@ -27,12 +27,11 @@ public class ParkourController : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体
+        var hitData = environmentScanner.ObstacleCheck();
         #region 各种跑酷动作
-        if (Input.GetButton("Jump") && !inAction && playerController.isGrounded)
+        if (Input.GetButton("Jump") && !inAction)
         {
-            //ObstacleCheck()方法里的调试用的射线也只会在if满足的时候触发
-            //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体
-            var hitData = environmentScanner.ObstacleCheck();
             if (hitData.forwardHitFound)
             {
                 //对于每一个在跑酷动作列表中的跑酷动作
@@ -57,12 +56,14 @@ public class ParkourController : MonoBehaviour
         #endregion
 
         #region 悬崖跳下动作
-        //在悬崖边沿且不在播放动作中
-        if(playerController.IsOnLedge && !inAction)
+        //在悬崖边沿且不在播放动作中且前方没有障碍物
+        if(playerController.IsOnLedge && !inAction && !hitData.forwardHitFound)
         {
-            playerController.IsOnLedge = false;
-
-            StartCoroutine(DoParkourAction(JumpDownAction));
+            //偏差角度小于50度，才会播放JumpDown动画
+            if(playerController.LedgeHitData.angle <= 50f){
+                playerController.IsOnLedge = false;
+                StartCoroutine(DoParkourAction(jumpDownAction));
+            }
 
         }
         #endregion
@@ -82,8 +83,9 @@ public class ParkourController : MonoBehaviour
         animator.CrossFade(action.AnimName, 0.2f);
 
         // 等待过渡完成
-        yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
-
+        //yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
+        yield return null;
+        
         // 现在获取动画状态信息
         var animStateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
