@@ -59,12 +59,15 @@ public class ParkourController : MonoBehaviour
         //在悬崖边沿且不在播放动作中且前方没有障碍物
         if(playerController.IsOnLedge && !inAction && !hitData.forwardHitFound)
         {
+            bool shouldJump = true;
+            if(!Input.GetButtonDown("Jump")){
+                shouldJump = false;
+            }
             //偏差角度小于50度，才会播放JumpDown动画
-            if(playerController.LedgeHitData.angle <= 50f){
+            if(playerController.LedgeHitData.angle <= 50f && shouldJump){
                 playerController.IsOnLedge = false;
                 StartCoroutine(DoParkourAction(jumpDownAction));
             }
-
         }
         #endregion
     }
