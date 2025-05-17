@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;  //  .Where() extension method
 using UnityEngine;
 
 public class EnvironmentScanner : MonoBehaviour
@@ -72,27 +73,35 @@ public class EnvironmentScanner : MonoBehaviour
         //检测射线的起始位置
         var origin = transform.position + moveDir * originOffset + Vector3.up;    //起始位置不要在脚底，悬崖和和脚在同一高度，可能会检测不到，向上偏移一些
         //射线向下发射是否击中：击中点在地面位置，赋值给hitGround
-        if (Physics.Raycast(origin, Vector3.down, out RaycastHit hitGround, ledgeRayLength, obstacleLayer))
+        if (PhysicsUtil.ThreeRaycast(origin, Vector3.down, 0.25f, transform,
+                out List<RaycastHit> hitsGround, ledgeRayLength, obstacleLayer, true))
         {
-            //调试用的向下发射的射线
-            Debug.DrawRay(origin, Vector3.down * ledgeRayLength, Color.green);
-
-            //检测射线起始位置：脚底向前moveDir再向下偏移一些
-            var surfaceRayOrigin = transform.position + moveDir - Vector3.up * 0.1f;
-            //悬崖竖直表面射线是否击中：击中点在悬崖竖直表面，赋值给hitSurface
-            if (Physics.Raycast(surfaceRayOrigin, -moveDir, out ledgeHitData.hitSurface, 2f, obstacleLayer))
+            //有效击中返回值列表：检查hitsGround里的所有击中信息hit
+            //height：计算当前位置高度 = 角色位置高度 - 击中点高度
+            //超过这个悬崖高度阈值ledgeHeightThreshold，才会认为是悬崖边缘
+            var validHits = hitsGround.Where(hit => transform.position.y - hit.point.y > ledgeHeightThreshold).ToList();
+            //只要有一个有效击中，就认为是悬崖边缘
+            if (validHits.Count > 0)
             {
-                //计算当前位置高度 = 角色位置高度 - 击中点高度
-                float height = transform.position.y - hitGround.point.y;
-                //超过这个悬崖高度阈值，才会认为是悬崖边缘
-                if (height > ledgeHeightThreshold)
-                {
+                #region 悬崖边沿竖直表面检测——悬崖边沿移动限制机制需要用到ledgeHitData.hitSurface的属性，播放JumpDown动画时判定需要用到ledgeHitData.angle和ledgeHitData.height
+                // 射线起始位置：脚底向前moveDir再向下偏移一些
+                var surfaceRayOrigin = validHits[0].point;
+                surfaceRayOrigin.y = transform.position.y - 0.1f;
+                // 射线是否击中：击中点在悬崖竖直表面，赋值给hitSurface
+                if (Physics.Raycast(surfaceRayOrigin, transform.position - surfaceRayOrigin, out RaycastHit hitSurface, 2f, obstacleLayer))
+                {   
+                    Debug.DrawLine(surfaceRayOrigin, transform.position, Color.cyan);
+                    //计算当前位置高度 = 角色位置高度 - 任一击中点高度(这三个击中点高度都是一样的)
+                    float height = transform.position.y - validHits[0].point.y;
+
                     //计算当前位置与悬崖表面法线的夹角
-                    ledgeHitData.angle = Vector3.Angle(transform.forward, ledgeHitData.hitSurface.normal);
+                    ledgeHitData.angle = Vector3.Angle(transform.forward, hitSurface.normal);
                     ledgeHitData.height = height;
-                    
+                    ledgeHitData.hitSurface = hitSurface;
+
                     return true;
                 }
+                #endregion
             }
         }
         return false;
@@ -114,7 +123,8 @@ public struct ObstacleHitData
     #endregion
 }
 
-public struct LedgeHitData{
+public struct LedgeHitData
+{
     public float angle;
     public float height;
     public RaycastHit hitSurface;
