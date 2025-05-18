@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animName: ClimbUp
   obstacleTag: 
-  minHeigth: 1.5
-  maxHeigth: 2.5
+  minHeight: 1.5
+  maxHeight: 2.5
   rotateToObstacle: 1
   actionDelay: 0
   enableTargetMatching: 1

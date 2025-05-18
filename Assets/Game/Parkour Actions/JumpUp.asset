@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animName: JumpUp
   obstacleTag: 
-  minHeigth: 0.8
-  maxHeigth: 1.5
+  minHeight: 0.8
+  maxHeight: 1.5
   rotateToObstacle: 1
-  actionDelay: 0
+  actionDelay: 0.2
   enableTargetMatching: 1
   matchBodyPart: 3
   matchStartTime: 0.186

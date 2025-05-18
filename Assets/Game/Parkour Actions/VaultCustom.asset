@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animName: VaultFence
   obstacleTag: Fence
-  minHeigth: 0.8
-  maxHeigth: 1.5
+  minHeight: 0.8
+  maxHeight: 1.5
   rotateToObstacle: 1
   actionDelay: 0
   enableTargetMatching: 1
-  matchBodyPart: 5
+  matchBodyPart: 4
   matchStartTime: 0.18
   matchTargetTime: 0.317
   matchPositionXYZWeight: {x: 0, y: 1, z: 1}

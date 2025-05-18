@@ -11,8 +11,8 @@ public class ParkourAction : ScriptableObject
     [SerializeField] string obstacleTag;
 
     [Header("高度区间")]
-    [SerializeField] float minheight;
-    [SerializeField] float maxheight;
+    [SerializeField] float minHeight;
+    [SerializeField] float maxHeight;
 
     [Header ("自主勾选该动作是否需要转向障碍物")]
     [SerializeField] bool rotateToObstacle;
@@ -46,7 +46,7 @@ public class ParkourAction : ScriptableObject
         //如果高度不在区间内，false
         //获取面前的障碍物高度 = 击中点上方一定高度的y轴坐标 - 玩家的y轴坐标
         float height = hitData.heightHitInfo.point.y - player.position.y;
-        if(height < minheight || height > maxheight)
+        if(height < minHeight || height > maxHeight)
         {
             return false;
         }

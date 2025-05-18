@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animName: JumpDown
   obstacleTag: 
-  minHeigth: 0
-  maxHeigth: 0
+  minheight: 0
+  maxheight: 0
   rotateToObstacle: 0
   actionDelay: 0
   enableTargetMatching: 1
