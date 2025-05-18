@@ -206,6 +206,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //角色控制权属性，可以外部传参
+    public bool HasControl{
+        get => hasControl;
+        set => hasControl = value;
+    }
+
     //画检测射线
     private void OnDrawGizmosSelected()
     {

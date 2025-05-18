@@ -10,6 +10,8 @@ public class ParkourController : MonoBehaviour
     [SerializeField] List<ParkourAction> parkourActions;
     [Header("跳下悬崖动画")]
     [SerializeField] ParkourAction jumpDownAction;
+    [Header("自动跳下高度")]
+    [SerializeField] float autoJumpDownHeight = 1f;
 
     EnvironmentScanner environmentScanner;
     Animator animator;
@@ -59,12 +61,14 @@ public class ParkourController : MonoBehaviour
         //在悬崖边沿且不在播放动作中且前方没有障碍物
         if(playerController.IsOnLedge && !inAction && !hitData.forwardHitFound)
         {
+            //低矮的落差shouldJump == true，直接播放JumpDown动画
             bool shouldJump = true;
-            if(!Input.GetButtonDown("Jump")){
+            //只有高度大于autoJumpHeight 且 玩家按下跳跃键才会跳下悬崖
+            if(playerController.LedgeHitData.height > autoJumpDownHeight && !Input.GetButtonDown("Jump")){
                 shouldJump = false;
             }
             //偏差角度小于50度，才会播放JumpDown动画
-            if(playerController.LedgeHitData.angle <= 50f && shouldJump){
+            if(playerController.LedgeHitData.angle <= 50 && shouldJump){
                 playerController.IsOnLedge = false;
                 StartCoroutine(DoParkourAction(jumpDownAction));
             }

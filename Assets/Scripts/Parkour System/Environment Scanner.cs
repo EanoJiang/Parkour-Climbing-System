@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;  //  .Where() extension method
 using UnityEngine;
@@ -93,7 +94,11 @@ public class EnvironmentScanner : MonoBehaviour
                     Debug.DrawLine(surfaceRayOrigin, transform.position, Color.cyan);
                     //计算当前位置高度 = 角色位置高度 - 任一击中点高度(这三个击中点高度都是一样的)
                     float height = transform.position.y - validHits[0].point.y;
-
+                    //多个击中点，取高度最高的点作为height
+                    if(validHits.Count > 1){
+                        //自动选择高度最高的点作为height
+                        height = validHits.Max(validHit => transform.position.y - validHit.point.y);
+                    }
                     //计算当前位置与悬崖表面法线的夹角
                     ledgeHitData.angle = Vector3.Angle(transform.forward, hitSurface.normal);
                     ledgeHitData.height = height;
