@@ -54,6 +54,11 @@ public class PlayerController : MonoBehaviour
     }
     private void Update()
     {
+        //如果没有控制权，后面的就不执行了
+        if (!hasControl)
+        {
+            return;
+        }
         #region 角色输入控制
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -70,11 +75,6 @@ public class PlayerController : MonoBehaviour
         //让当前角色的移动方向等于期望方向
         moveDir = desireMoveDir;
 
-        //如果没有控制权，后面的就不执行了
-        if (!hasControl)
-        {
-            return;
-        }
 
         velocity = Vector3.zero;
 
@@ -120,9 +120,12 @@ public class PlayerController : MonoBehaviour
         #endregion
         //更新y轴方向的速度
         velocity.y = ySpeed;
-        //帧同步移动
-        //通过CharacterController.Move()来控制角色的移动，通过碰撞限制运动
-        charactercontroller.Move(velocity * Time.deltaTime);
+        //先检查角色控制器是否激活
+        if(charactercontroller.gameObject.activeSelf && charactercontroller.enabled && hasControl){
+            //帧同步移动
+            //通过CharacterController.Move()来控制角色的移动，通过碰撞限制运动
+            charactercontroller.Move(velocity * Time.deltaTime);
+        }
 
         //每次判断moveAmount的时候，确保只有在玩家实际移动时才会更新转向
         //没有输入并且移动方向角度小于0.2度就不更新转向，也就不会回到初始朝向
