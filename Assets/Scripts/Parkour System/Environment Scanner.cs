@@ -23,6 +23,8 @@ public class EnvironmentScanner : MonoBehaviour
     [Header("LayerMask")]
     //障碍物层
     [SerializeField] LayerMask obstacleLayer;
+    //悬崖攀岩石层
+    [SerializeField] LayerMask climbLedgeLayer;
 
     public ObstacleHitData ObstacleCheck()
     {
@@ -54,13 +56,37 @@ public class EnvironmentScanner : MonoBehaviour
     }
 
     /// <summary>
+    /// 攀崖石检测
+    /// </summary>
+    /// <param name="dir"></param>角色朝向
+    /// <param name="ledgeHit"></param>检测信息
+    /// <returns></returns>
+    public bool ClimbLedgeCheck(Vector3 dir,out RaycastHit ledgeHit){
+        ledgeHit = new RaycastHit();
+        if(dir == Vector3.zero){
+            return false;
+        }
+        Vector3 origin = transform.position + Vector3.up * 1.5f;
+        Vector3 offset = Vector3.up * 0.15f;
+        //在人物朝向上循环发射多条平行检测射线
+        foreach(int i in Enumerable.Range(0, 10)){
+            Debug.DrawRay(origin + offset * i, dir, Color.white);
+            if(Physics.Raycast(origin + offset * i, dir, out RaycastHit hit, 0.5f, climbLedgeLayer)){
+                ledgeHit = hit;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 检测是否在悬崖边缘
     /// </summary>
     /// <param name="moveDir"></param>
     /// <param name="ledgeHitData"></param>
     /// <returns></returns>
     /// out关键字需要在方法内部初始化
-    public bool LedgeCheck(Vector3 moveDir, out LedgeHitData ledgeHitData)
+    public bool ObstacleLedgeCheck(Vector3 moveDir, out LedgeHitData ledgeHitData)
     {
         //用来存悬崖边缘检测相关的信息
         ledgeHitData = new LedgeHitData();

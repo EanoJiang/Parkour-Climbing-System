@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviour
     bool isGrounded;
     //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
     bool hasControl = true;
+    //是否在动作中
+    public bool InAction {get;private set;}
 
     //moveDir、velocity改成全局变量
     //当前角色的移动方向，这是实时移动方向，只要输入方向键就会更新
@@ -89,7 +91,7 @@ public class PlayerController : MonoBehaviour
             velocity = desireMoveDir * moveSpeed;
             #region 悬崖检测
             //在地上的时候进行悬崖检测,传给isOnLedge变量
-            IsOnLedge = environmentScanner.LedgeCheck(desireMoveDir, out LedgeHitData ledgeHitData);
+            IsOnLedge = environmentScanner.ObstacleLedgeCheck(desireMoveDir, out LedgeHitData ledgeHitData);
             //如果在悬崖边沿，就把击中数据传给LedgeHitData变量，用来在ParkourController里面调用
             if (IsOnLedge)
             {
@@ -158,7 +160,7 @@ public class PlayerController : MonoBehaviour
         //无向夹角
         float angle = Math.Abs(signedAngle);
         //这个夹角是锐角说明玩家将要走过悬崖边沿，限制不让走
-        Debug.Log("angle: " + angle);
+        //  Debug.Log("angle: " + angle);
         if(Vector3.Angle(transform.forward, desireMoveDir) >80){
             //当前朝向与期望移动方向的夹角超过80度
             //转向悬崖边沿也就是期望方向，但是不移动
@@ -188,6 +190,101 @@ public class PlayerController : MonoBehaviour
             moveDir = dir;
         }
     }
+
+    /// <summary>
+    /// 通用动作播放
+    /// </summary>
+    /// <param name="animName"></param>
+    /// <param name="matchParams"></param>
+    /// <param name="targetRotation"></param>
+    /// <param name="actionDelay"></param>
+    /// <param name="needRotate"></param>
+    /// <param name="mirrorAction"></param>
+    /// <returns></returns>
+    public IEnumerator DoAction(string animName, MatchTargetParams matchParams, Quaternion targetRotation,
+                    float actionDelay = 0f, bool needRotate = false, bool mirrorAction = false)
+    {
+        //跑酷动作开始
+        InAction = true;
+        
+        //不是所有动作都需要，具体动作自行写上
+        // //禁用玩家控制
+        // playerController.SetControl(false);
+
+        //设置动画是否镜像
+        animator.SetBool("mirrorAction", mirrorAction);
+
+        //从当前动画到指定的目标动画，平滑过渡0.2s
+        animator.CrossFade(animName, 0.2f);
+
+        // 等待过渡完成
+        //yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
+        yield return null;
+        
+        // 现在获取动画状态信息
+        var animStateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+        //#region 调试用
+        //if (!animStateInfo.IsName(animName))
+        //{
+        //    Debug.LogError("动画名称不匹配！");
+        //}
+        //#endregion
+
+        ////暂停协程，直到 "StepUp" 动画播放完毕。
+        //yield return new WaitForSeconds(animStateInfo.length);
+
+        //动画播放期间，暂停协程，并让角色平滑旋转向障碍物
+        float timer = 0f;
+        while (timer <= animStateInfo.length)
+        {
+            timer += Time.deltaTime;
+            //如果勾选该动作需要旋转向障碍物RotateToObstacle
+            if (needRotate)
+            {
+                //让角色平滑旋转向障碍物
+                transform.rotation = Quaternion.RotateTowards(transform.rotation,targetRotation, 
+                                                        RotationSpeed * Time.deltaTime);
+            }
+            //如果勾选目标匹配EnableTargetMatching
+            //只有当不在过渡状态时才执行目标匹配
+            if (matchParams != null && !animator.IsInTransition(0))
+            {
+                MatchTarget(matchParams);
+            }
+
+            //过渡动画完全播完就停止该动作播放
+            if(animator.IsInTransition(0) && timer > 0.5f){
+                break;
+            }
+
+            yield return null;
+        }
+        //对于一些组合动作，第一阶段播放完后就会被输入控制打断，这时候给一个延迟，让第二阶段的动画也播放完
+        //对于ClimbUp动作，第二阶段就是CrouchToStand
+        yield return new WaitForSeconds(actionDelay);
+        
+        //不是所有动作都需要，具体动作自行写上
+        // //延迟结束后才启用玩家控制
+        // playerController.SetControl(true);
+
+        //跑酷动作结束
+        InAction = false;
+    }
+
+    //目标匹配
+    void MatchTarget(MatchTargetParams mp)
+    {
+        //只有在不匹配和不在过渡状态的时候才会调用
+        if (animator.isMatchingTarget || animator.IsInTransition(0))
+        {
+            return;
+        }
+        //调用unity自带的MatchTarget方法
+        animator.MatchTarget(mp.matchPosition, transform.rotation, mp.matchBodyPart, 
+                        new MatchTargetWeightMask(mp.matchPositionXYZWeight, 0), mp.matchStartTime, mp.matchTargetTime);
+    }
+
 
     //角色控制
     public void SetControl(bool hasControl)
@@ -226,4 +323,13 @@ public class PlayerController : MonoBehaviour
     //让rotationSpeed可以被外部访问
     public float RotationSpeed => rotationSpeed;
 
+}
+
+//目标匹配TargetMatching用到的参数
+public class MatchTargetParams{
+    public Vector3 matchPosition;
+    public AvatarTarget matchBodyPart;
+    public Vector3 matchPositionXYZWeight;
+    public float matchStartTime;
+    public float matchTargetTime;
 }
