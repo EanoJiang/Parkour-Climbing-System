@@ -2,6 +2,4 @@
 
 目前进度：
 
-[演示video.mov](演示video.mov)
-
-[youtube演示](https://youtu.be/UZbiPFzJ3Bg)
+[视频演示](https://youtu.be/UZbiPFzJ3Bg)
