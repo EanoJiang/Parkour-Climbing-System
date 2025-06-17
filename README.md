@@ -2,4 +2,6 @@
 
 目前进度：
 
-https://youtu.be/UZbiPFzJ3Bg
+[演示video.mov](演示video.mov)
+
+[youtube演示](https://youtu.be/UZbiPFzJ3Bg)
