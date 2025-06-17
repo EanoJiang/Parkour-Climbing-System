@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     bool hasControl = true;
     //是否在动作中
     public bool InAction {get;private set;}
+    //是否在攀岩中
+    public bool IsHanging{get;set;}
 
     //moveDir、velocity改成全局变量
     //当前角色的移动方向，这是实时移动方向，只要输入方向键就会更新
@@ -61,6 +63,12 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
+        //如果在攀岩就不执行后面的运动逻辑
+        if (IsHanging)
+        {
+            return;
+        }
+
         #region 角色输入控制
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
@@ -91,7 +99,7 @@ public class PlayerController : MonoBehaviour
             velocity = desireMoveDir * moveSpeed;
             #region 悬崖检测
             //在地上的时候进行悬崖检测,传给isOnLedge变量
-            IsOnLedge = environmentScanner.ObstacleLedgeCheck(desireMoveDir, out LedgeHitData ledgeHitData);
+            IsOnLedge = environmentScanner.ObstacleLedgeCheck  (desireMoveDir, out LedgeHitData ledgeHitData);
             //如果在悬崖边沿，就把击中数据传给LedgeHitData变量，用来在ParkourController里面调用
             if (IsOnLedge)
             {
@@ -202,7 +210,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="mirrorAction"></param>
     /// <returns></returns>
     public IEnumerator DoAction(string animName, MatchTargetParams matchParams, Quaternion targetRotation,
-                    float actionDelay = 0f, bool needRotate = false, bool mirrorAction = false)
+                    bool needRotate = false, float actionDelay = 0f, bool mirrorAction = false)
     {
         //跑酷动作开始
         InAction = true;
@@ -215,7 +223,7 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("mirrorAction", mirrorAction);
 
         //从当前动画到指定的目标动画，平滑过渡0.2s
-        animator.CrossFade(animName, 0.2f);
+        animator.CrossFadeInFixedTime(animName, 0.2f);
 
         // 等待过渡完成
         //yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
@@ -235,15 +243,19 @@ public class PlayerController : MonoBehaviour
         //yield return new WaitForSeconds(animStateInfo.length);
 
         //动画播放期间，暂停协程，并让角色平滑旋转向障碍物
+        //动作匹配开始之后才进行旋转
+        float rotationStartTime = (matchParams != null)? matchParams.matchStartTime : 0f;
+
         float timer = 0f;
         while (timer <= animStateInfo.length)
         {
             timer += Time.deltaTime;
+            float normalizedTimer = timer / animStateInfo.length;
             //如果勾选该动作需要旋转向障碍物RotateToObstacle
-            if (needRotate)
+            if (needRotate && normalizedTimer > rotationStartTime)
             {
                 //让角色平滑旋转向障碍物
-                transform.rotation = Quaternion.RotateTowards(transform.rotation,targetRotation, 
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation,
                                                         RotationSpeed * Time.deltaTime);
             }
             //如果勾选目标匹配EnableTargetMatching
@@ -254,7 +266,8 @@ public class PlayerController : MonoBehaviour
             }
 
             //过渡动画完全播完就停止该动作播放
-            if(animator.IsInTransition(0) && timer > 0.5f){
+            if (animator.IsInTransition(0) && timer > 0.5f)
+            {
                 break;
             }
 
@@ -331,5 +344,5 @@ public class MatchTargetParams{
     public AvatarTarget matchBodyPart;
     public Vector3 matchPositionXYZWeight;
     public float matchStartTime;
-    public float matchTargetTime;
+    public float matchTargetTime; 
 }

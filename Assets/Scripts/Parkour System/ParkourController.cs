@@ -30,7 +30,7 @@ public class ParkourController : MonoBehaviour
         //调用环境扫描器environment scanner的ObstacleCheck方法的返回值：ObstacleHitData结构体
         var hitData = environmentScanner.ObstacleCheck();
         #region 各种跑酷动作
-        if (Input.GetButton("Jump") && !playerController.InAction)
+        if (Input.GetButton("Jump") && !playerController.InAction && !playerController.IsHanging)
         {
             if (hitData.forwardHitFound)
             {
@@ -94,7 +94,7 @@ public class ParkourController : MonoBehaviour
         }
 
         yield return playerController.DoAction(action.AnimName, matchParams, transform.rotation, 
-                                        action.ActionDelay, action.RotateToObstacle, action.Mirror);
+                                         action.RotateToObstacle, action.ActionDelay, action.Mirror);
         
         //延迟结束后才启用玩家控制
         playerController.SetControl(true);       
