@@ -80,6 +80,24 @@ public class EnvironmentScanner : MonoBehaviour
     }
 
     /// <summary>
+    /// 检测当前位置是否有边沿攀岩架
+    /// </summary>
+    /// <param name="ledgeHit"></param>
+    /// <returns></returns>
+    public bool DropLedgeCheck(out RaycastHit ledgeHit)
+    {
+        //out修饰的参数必须要先初始化
+        ledgeHit = new RaycastHit();
+        Vector3 origin = transform.position + Vector3.down * 0.1f + transform.forward * 2f;
+        if (Physics.Raycast(origin, -transform.forward, out RaycastHit hit, 3f, climbLedgeLayer))
+        {   
+            ledgeHit = hit;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 检测是否在悬崖边缘
     /// </summary>
     /// <param name="moveDir"></param>
@@ -116,12 +134,13 @@ public class EnvironmentScanner : MonoBehaviour
                 surfaceRayOrigin.y = transform.position.y - 0.1f;
                 // 射线是否击中：击中点在悬崖竖直表面，赋值给hitSurface
                 if (Physics.Raycast(surfaceRayOrigin, transform.position - surfaceRayOrigin, out RaycastHit hitSurface, 2f, obstacleLayer))
-                {   
+                {
                     Debug.DrawLine(surfaceRayOrigin, transform.position, Color.cyan);
                     //计算当前位置高度 = 角色位置高度 - 任一击中点高度(这三个击中点高度都是一样的)
                     float height = transform.position.y - validHits[0].point.y;
                     //多个击中点，取高度最高的点作为height
-                    if(validHits.Count > 1){
+                    if (validHits.Count > 1)
+                    {
                         //自动选择高度最高的点作为height
                         height = validHits.Max(validHit => transform.position.y - validHit.point.y);
                     }

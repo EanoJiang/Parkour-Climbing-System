@@ -95,7 +95,7 @@ public class ParkourController : MonoBehaviour
 
         yield return playerController.DoAction(action.AnimName, matchParams, transform.rotation, 
                                          action.RotateToObstacle, action.ActionDelay, action.Mirror);
-        
+
         //延迟结束后才启用玩家控制
         playerController.SetControl(true);       
     }

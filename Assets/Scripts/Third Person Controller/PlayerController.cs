@@ -209,7 +209,7 @@ public class PlayerController : MonoBehaviour
     /// <param name="needRotate"></param>
     /// <param name="mirrorAction"></param>
     /// <returns></returns>
-    public IEnumerator DoAction(string animName, MatchTargetParams matchParams, Quaternion targetRotation,
+    public IEnumerator DoAction(string animName, MatchTargetParams matchParams = null, Quaternion targetRotation = new Quaternion(),
                     bool needRotate = false, float actionDelay = 0f, bool mirrorAction = false)
     {
         //跑酷动作开始
@@ -298,8 +298,12 @@ public class PlayerController : MonoBehaviour
                         new MatchTargetWeightMask(mp.matchPositionXYZWeight, 0), mp.matchStartTime, mp.matchTargetTime);
     }
 
-
-    //角色控制
+    //角色物理控制(物理碰撞是否启用)
+    public void EnableCharacterController(bool enabled)
+    {
+        charactercontroller.enabled = enabled;
+    }
+    //角色输入控制
     public void SetControl(bool hasControl)
     {
         //传参给 hasControl 私有变量
@@ -319,8 +323,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //重置转向
+    public void ResetRotation()
+    {
+        targetRotation = transform.rotation;
+    }
+
     //角色控制权属性，可以外部传参
-    public bool HasControl{
+    public bool HasControl
+    {
         get => hasControl;
         set => hasControl = value;
     }

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 2d8810a0dfab040e288e6388f6803c5d
+guid: 34940c70442864cb79079ee43b308dd4
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -33,14 +33,14 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: ClimbFromHang
+      name: DropToHang
       takeName: mixamo.com
       internalID: -203655887218126122
       firstFrame: 0
-      lastFrame: 34
+      lastFrame: 72
       wrapMode: 0
       orientationOffsetY: 0
-      level: -0.36
+      level: 2.3
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
@@ -50,9 +50,9 @@ ModelImporter:
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
       keepOriginalOrientation: 0
-      keepOriginalPositionY: 0
+      keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
-      heightFromFeet: 1
+      heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []

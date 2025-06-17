@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class ClimbPoint : MonoBehaviour
 {
+    [SerializeField] bool mountPoint;
     [SerializeField] List<Neighbour> neighbours;
 
     //只要攀岩架之间是邻居，那就自动创建双向关系
@@ -59,6 +60,8 @@ public class ClimbPoint : MonoBehaviour
 
         }
     }
+
+    public bool MountPoint => mountPoint;
 }
 
 //下面的序列化字段可见
