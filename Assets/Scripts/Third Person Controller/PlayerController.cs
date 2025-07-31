@@ -6,8 +6,9 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("玩家属性")]
-    [SerializeField] float moveSpeed = 5f;
+    [SerializeField] float moveSpeed = 7f;
     [SerializeField] float rotationSpeed = 500f;
+    [SerializeField] float jumpSpeed;
 
     [Header("Ground Check")]
     [SerializeField] float groundCheckRadius = 0.5f;
@@ -16,20 +17,28 @@ public class PlayerController : MonoBehaviour
     [SerializeField] LayerMask groundLayer;
 
     //是否在地面
-    bool isGrounded;
+    public bool IsGrounded { get; set; }
     //是否拥有控制权：默认拥有控制权，否则角色初始就不受控
     bool hasControl = true;
+    //输入控制
+    public bool inputEnabled = true;
     //是否在动作中
-    public bool InAction {get;private set;}
+    public bool InAction { get; private set; }
     //是否在攀岩中
-    public bool IsHanging{get;set;}
+    public bool IsHanging { get; set; }
+    //是否跳跃
+    public bool jump;
+    public bool lockPlannar;
 
     //moveDir、velocity改成全局变量
     //当前角色的移动方向，这是实时移动方向，只要输入方向键就会更新
     Vector3 moveDir;
     //角色期望的移动方向，这个期望方向是和相机水平转动方向挂钩的，与鼠标或者手柄右摇杆一致
     Vector3 desireMoveDir;
-    Vector3 velocity;
+    //水平方向的速度
+    Vector3 planarVelocity;
+    //竖直方向的跳跃冲量
+    Vector3 thrustVelocity;
 
     //是否在悬崖边沿上
     public bool IsOnLedge { get; set; }
@@ -44,6 +53,10 @@ public class PlayerController : MonoBehaviour
     Animator animator;
     CharacterController charactercontroller;
     EnvironmentScanner environmentScanner;
+    Rigidbody rigid;
+    //MeleeFighter meleeFighter;
+    ThirdPersonAttack thirdPersonAttack;
+    ParkourController parkourController;
 
     private void Awake()
     {
@@ -55,6 +68,13 @@ public class PlayerController : MonoBehaviour
         charactercontroller = GetComponent<CharacterController>();
         //环境扫描器
         environmentScanner = GetComponent<EnvironmentScanner>();
+        //
+        rigid = GetComponent<Rigidbody>();
+        ////近战
+        //meleeFighter = GetComponent<MeleeFighter>();
+        thirdPersonAttack = GetComponent<ThirdPersonAttack>();
+        //跑酷
+        parkourController = GetComponent<ParkourController>();
     }
     private void Update()
     {
@@ -63,43 +83,69 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
-        //如果在攀岩就不执行后面的运动逻辑
-        if (IsHanging)
+        //如果在动作中,不执行后面的运动逻辑并且不播放走路动画
+        if (IsHanging || InAction)
         {
+            animator.SetFloat("moveAmount", 0);
             return;
         }
 
         #region 角色输入控制
+        #region 水平方向
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-
+        animator.SetFloat("AxisX", h);
+        animator.SetFloat("AxisY", v);
         //把moveAmount限制在0-1之间(混合树的区间)
         float moveAmount = Mathf.Clamp01(Mathf.Abs(h) + Mathf.Abs(v));
-
+        
         //标准化 moveInput 向量
         var moveInput = new Vector3(h, 0, v).normalized;
+        if(inputEnabled == false){
+            h = 0;
+            v = 0;
+        }
 
         //让人物期望移动方向关联相机的水平旋转朝向
         //  这样角色就只能在水平方向移动，而不是相机在竖直方向的旋转量也会改变角色的移动方向
         desireMoveDir = cameraController.PlanarRotation * moveInput;
         //让当前角色的移动方向等于期望方向
+        //if (lockPlannar == false)
         moveDir = desireMoveDir;
 
-
-        velocity = Vector3.zero;
+        planarVelocity = Vector3.zero;
+        #endregion
+        #region 竖直方向——Jump
+        jump = Input.GetButton("Jump");
+        #endregion
+        #endregion
 
         #region 地面检测
         GroundCheck();
-        animator.SetBool("isGrounded", isGrounded);
-        if (isGrounded)
+        animator.SetBool("isGrounded", IsGrounded);
+        if (IsGrounded)
         {
             //设置一个较小的负值，让角色在地上的时候被地面吸住
-            ySpeed = -0.5f;
+            //只有在没有跳跃的情况下才重置ySpeed，避免跳跃被覆盖
+            if (!jump)
+            {
+                ySpeed = -0.5f;
+            }
+            else if(!InAction)
+            {
+                Debug.Log("JumpDown");
+                animator.SetBool("jump", jump);
+                ySpeed = jumpSpeed;
+                jump = false;
+            }
+
             //在地上的速度只需要初始化角色期望方向的速度就行，只有水平分量
-            velocity = desireMoveDir * moveSpeed;
+            planarVelocity = desireMoveDir * moveSpeed;
+
+
             #region 悬崖检测
             //在地上的时候进行悬崖检测,传给isOnLedge变量
-            IsOnLedge = environmentScanner.ObstacleLedgeCheck  (desireMoveDir, out LedgeHitData ledgeHitData);
+            IsOnLedge = environmentScanner.ObstacleLedgeCheck(desireMoveDir, out LedgeHitData ledgeHitData);
             //如果在悬崖边沿，就把击中数据传给LedgeHitData变量，用来在ParkourController里面调用
             if (IsOnLedge)
             {
@@ -117,7 +163,7 @@ public class PlayerController : MonoBehaviour
             //因为动画用的moveAmount参数只需要水平方向的移动量就行了，不需要考虑y轴
             //那么也就不需要方向，只需要值
             //所以传入归一化的 velocity.magnitude / moveSpeed就行了
-            animator.SetFloat("moveAmount", velocity.magnitude / moveSpeed, 0.2f, Time.deltaTime);
+            animator.SetFloat("moveAmount", planarVelocity.magnitude / moveSpeed, 0.2f, Time.deltaTime);
             #endregion
         }
         else
@@ -125,16 +171,20 @@ public class PlayerController : MonoBehaviour
             //在空中时，ySpeed受重力控制
             ySpeed += Physics.gravity.y * Time.deltaTime;
             //简单模拟有空气阻力的平抛运动：空中时的速度设置为角色朝向速度的一半
-            velocity = transform.forward * moveSpeed / 2;
+            planarVelocity = transform.forward * moveSpeed / 2;
         }
         #endregion
+
+        #region 角色控制器控制
         //更新y轴方向的速度
-        velocity.y = ySpeed;
+        planarVelocity.y = ySpeed;
+
         //先检查角色控制器是否激活
-        if(charactercontroller.gameObject.activeSelf && charactercontroller.enabled && hasControl){
+        if (charactercontroller.gameObject.activeSelf && charactercontroller.enabled && hasControl)
+        {
             //帧同步移动
             //通过CharacterController.Move()来控制角色的移动，通过碰撞限制运动
-            charactercontroller.Move(velocity * Time.deltaTime);
+            charactercontroller.Move(planarVelocity* Time.deltaTime);
         }
 
         //每次判断moveAmount的时候，确保只有在玩家实际移动时才会更新转向
@@ -144,6 +194,7 @@ public class PlayerController : MonoBehaviour
         {
             //人物模型转起来：让目标朝向与当前移动方向一致
             targetRotation = Quaternion.LookRotation(moveDir);
+
         }
         //更新transform.rotation：让人物从当前朝向到目标朝向慢慢转向
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation,
@@ -151,12 +202,29 @@ public class PlayerController : MonoBehaviour
         #endregion
     }
 
+
+    /// <summary>
+    /// 起跳和落地角色控制权
+    /// </summary>
+    public void OnJumpEnter()
+    {
+        Debug.Log("起跳");
+        inputEnabled = false;
+        lockPlannar = true;
+    }
+    public void OnJumpExit()
+    {
+        Debug.Log("落地");
+        inputEnabled = true;
+        lockPlannar = false;
+    }
+
     //地面检测
     private void GroundCheck()
     {
         // Physics.CheckSphere()方法会向场景中的所有碰撞体投射一个胶囊体（capsule），有相交就返回true
         // 位置偏移用来在unity控制台里面调整
-        isGrounded = Physics.CheckSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius, groundLayer);
+        IsGrounded = Physics.CheckSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius, groundLayer);
     }
 
     //悬崖边沿移动限制机制 
@@ -169,17 +237,19 @@ public class PlayerController : MonoBehaviour
         float angle = Math.Abs(signedAngle);
         //这个夹角是锐角说明玩家将要走过悬崖边沿，限制不让走
         //  Debug.Log("angle: " + angle);
-        if(Vector3.Angle(transform.forward, desireMoveDir) >80){
+        if (Vector3.Angle(transform.forward, desireMoveDir) > 80)
+        {
             //当前朝向与期望移动方向的夹角超过80度
             //转向悬崖边沿也就是期望方向，但是不移动
-            velocity = Vector3.zero;
+            planarVelocity = Vector3.zero;
             //这里不能写moveDir = desireMoveDir;直接return就很好
             //这样直接返回就不会执行后面的代码了，人物转向直接由前面Update()里的代码控制
             return;
         }
-        if(angle < 60){
+        if (angle < 60)
+        {
             //速度设置为0，让玩家停止移动
-            velocity = Vector3.zero;
+            planarVelocity = Vector3.zero;
             //让当前方向为0，也就是不让玩家旋转方向，但是期望方向还是与相机转动方向一致，仍然可以转回去
             moveDir = Vector3.zero;
         }
@@ -193,7 +263,7 @@ public class PlayerController : MonoBehaviour
             // (刚好也是左正右负，逻辑不变，直接乘就行)
             var dir = parallerDir_left * Math.Sign(signedAngle);
             //只保留与悬崖边沿平行的方向的速度
-            velocity = velocity.magnitude * dir;
+            planarVelocity = planarVelocity.magnitude * dir;
             //更新角色当前方向
             moveDir = dir;
         }
@@ -214,7 +284,7 @@ public class PlayerController : MonoBehaviour
     {
         //跑酷动作开始
         InAction = true;
-        
+
         //不是所有动作都需要，具体动作自行写上
         // //禁用玩家控制
         // playerController.SetControl(false);
@@ -228,7 +298,7 @@ public class PlayerController : MonoBehaviour
         // 等待过渡完成
         //yield return new WaitForSeconds(0.3f); // 给足够时间让过渡完成，稍微大于CrossFade的过渡时间
         yield return null;
-        
+
         // 现在获取动画状态信息
         var animStateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
@@ -244,7 +314,7 @@ public class PlayerController : MonoBehaviour
 
         //动画播放期间，暂停协程，并让角色平滑旋转向障碍物
         //动作匹配开始之后才进行旋转
-        float rotationStartTime = (matchParams != null)? matchParams.matchStartTime : 0f;
+        float rotationStartTime = (matchParams != null) ? matchParams.matchStartTime : 0f;
 
         float timer = 0f;
         while (timer <= animStateInfo.length)
@@ -276,7 +346,7 @@ public class PlayerController : MonoBehaviour
         //对于一些组合动作，第一阶段播放完后就会被输入控制打断，这时候给一个延迟，让第二阶段的动画也播放完
         //对于ClimbUp动作，第二阶段就是CrouchToStand
         yield return new WaitForSeconds(actionDelay);
-        
+
         //不是所有动作都需要，具体动作自行写上
         // //延迟结束后才启用玩家控制
         // playerController.SetControl(true);
@@ -294,7 +364,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
         //调用unity自带的MatchTarget方法
-        animator.MatchTarget(mp.matchPosition, transform.rotation, mp.matchBodyPart, 
+        animator.MatchTarget(mp.matchPosition, transform.rotation, mp.matchBodyPart,
                         new MatchTargetWeightMask(mp.matchPositionXYZWeight, 0), mp.matchStartTime, mp.matchTargetTime);
     }
 
@@ -350,10 +420,11 @@ public class PlayerController : MonoBehaviour
 }
 
 //目标匹配TargetMatching用到的参数
-public class MatchTargetParams{
+public class MatchTargetParams
+{
     public Vector3 matchPosition;
     public AvatarTarget matchBodyPart;
     public Vector3 matchPositionXYZWeight;
     public float matchStartTime;
-    public float matchTargetTime; 
+    public float matchTargetTime;
 }

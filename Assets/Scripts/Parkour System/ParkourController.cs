@@ -18,6 +18,8 @@ public class ParkourController : MonoBehaviour
     Animator animator;
     PlayerController playerController;
 
+    bool shouldJump;
+
     private void Awake()
     {
         environmentScanner = GetComponent<EnvironmentScanner>();
@@ -57,12 +59,12 @@ public class ParkourController : MonoBehaviour
 
         #region 悬崖跳下动作
         //在悬崖边沿且不在播放动作中且前方没有障碍物
-        if(playerController.IsOnLedge && !playerController.InAction && !hitData.forwardHitFound)
+        if (playerController.IsOnLedge && !playerController.InAction && !hitData.forwardHitFound)
         {
             //低矮的落差shouldJump == true，直接播放JumpDown动画
-            bool shouldJump = true;
-            //只有高度大于autoJumpHeight 且 玩家按下跳跃键才会跳下悬崖
-            if(playerController.LedgeHitData.height > autoJumpDownHeight && !Input.GetButtonDown("Jump")){
+            shouldJump = true;
+            //只有高度大于autoJumpHeight 且 玩家按下Drop键才会跳下悬崖
+            if (playerController.LedgeHitData.height > autoJumpDownHeight && !Input.GetButtonDown("Drop")){
                 shouldJump = false;
             }
             //偏差角度小于50度，才会播放JumpDown动画
@@ -99,4 +101,7 @@ public class ParkourController : MonoBehaviour
         //延迟结束后才启用玩家控制
         playerController.SetControl(true);       
     }
+
+    //外部可访问的属性
+    public bool ShouldJumpDown => shouldJump;
 }

@@ -26,6 +26,7 @@ public class EnvironmentScanner : MonoBehaviour
     //悬崖攀岩石层
     [SerializeField] LayerMask climbLedgeLayer;
 
+
     public ObstacleHitData ObstacleCheck()
     {
         var hitData = new ObstacleHitData();
